@@ -1,0 +1,25 @@
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: emqttcluster
+  name: emqttcluster
+  namespace: platform
+spec:
+  type: NodePort
+  ports:
+  - name: normal
+    port: 1883
+    nodePort: 30001
+    targetPort: 1883
+  - name: ssl
+    port: 8883
+    nodePort: 30002
+    targetPort: 8883
+  - name: dashboard
+    port: 18083
+    nodePort: 30003
+    targetPort: 18083
+
+  selector:
+    app: emqttcluster

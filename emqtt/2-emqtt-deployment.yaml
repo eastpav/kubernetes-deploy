@@ -1,0 +1,79 @@
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  labels:
+    app: emqttcluster
+  name: emqttcluster
+  namespace: platform
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: emqttcluster
+  template:
+    metadata:
+      labels:
+        app: emqttcluster
+      # Comment the following annotation if Dashboard must not be deployed on master
+      annotations:
+        scheduler.alpha.kubernetes.io/tolerations: |
+          [
+            {
+              "key": "dedicated",
+              "operator": "Equal",
+              "value": "master",
+              "effect": "NoSchedule"
+            }
+          ]
+    spec:
+      imagePullSecrets:
+      - name: registry-secret
+      containers:
+      - name: emqttcluster
+        image: registry.cn-hangzhou.aliyuncs.com/jc-network-web2/emqttd:2.3.5
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 18083
+          protocol: TCP
+        - containerPort: 1883
+          protocol: TCP
+        - containerPort: 8883
+          protocol: TCP
+
+        env:
+        - name: EMQ_LOADED_PLUGINS
+          value: "emq_auth_mysql,emq_recon,emq_modules,emq_retainer,emq_dashboard"
+        - name: EMQ_AUTH__MYSQL__SERVER
+          value: 192.168.1.10:30006
+        - name: EMQ_AUTH__MYSQL__USERNAME
+          value: mysql_username
+        - name: EMQ_AUTH__MYSQL__PASSWORD
+          value: mysql_password
+        - name: EMQ_AUTH__MYSQL__DATABASE
+          value: mysal_dbname
+        - name: EMQ_AUTH__MYSQL__PASSWORD_HASH
+          value: plain
+        - name: EMQ_MQTT__ALLOW_ANONYMOUS
+          value: "false"
+        - name: EMQ_MQTT__ACL_NOMATCH
+          value: deny
+        - name: EMQ_NAME
+          value: emqttcluster
+        - name: EMQ_NODE__COOKIE
+          value: ERLANG_COOKIE
+        - name: EMQ_CLUSTER__DISCOVERY
+          value: k8s
+        - name: EMQ_CLUSTER__K8S__APISERVER
+          value: http://192.168.1.10:8080
+        - name: EMQ_CLUSTER__K8S__SERVICE_NAME
+          value: emqttcluster
+        - name: EMQ_CLUSTER__K8S__ADDRESS_TYPE
+          value: ip
+        - name: EMQ_CLUSTER__K8S__APP_NAME
+          value: emqttcluster
+        #- name: EMQ_CLUSTER__ETCD__SERVER
+        #  value: https:\/\/192.168.1.10:2379
+        #- name: EMQ_CLUSTER__ETCD__PREFIX
+        #  value: emqcl
+        #- name: EMQ_CLUSTER__ETCD__NODE_TTL
+        #  value: 1m
