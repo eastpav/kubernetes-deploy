@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: consul-service
+  namespace: platform
+  labels:
+    name: consul-service
+spec:
+  ports:
+  - port: 8300
+    targetPort: 8300
+    name: cs-commu
+  - port: 8500
+    targetPort: 8500
+    name: http
+  - port: 8600
+    targetPort: 8600
+    name: dns
+  clusterIP: None
+  selector:
+    app: consul-server
+
+---
+
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: consul-server
+  namespace: platform
+  labels:
+    app: consul-server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: consul-server
+  template:
+    metadata:
+      labels:
+        app: consul-server
+    spec:
+      containers:
+      - name: consul-node
+        image: consul:1.0.6
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8300
+          protocol: TCP
+        - containerPort: 8500
+          protocol: TCP
+        - containerPort: 8600
+          protocol: TCP
+        - containerPort: 8600
+          protocol: UDP
+        args:
+        - agent
+        - -server
+        - -ui
+        - -client=0.0.0.0
+        - -bootstrap-expect=3
+        - -retry-join=consul-service

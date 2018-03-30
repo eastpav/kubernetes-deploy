@@ -1,0 +1,21 @@
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: consul-debug
+  namespace: platform
+  labels:
+    app: consul-debug
+spec:
+  type: NodePort
+  ports:
+  - port: 8300
+    nodePort: 30300
+    name: cs-commu-debug
+  - port: 8500
+    nodePort: 30500
+    name: http-debug
+  - port: 8600
+    name: dns-debug
+  selector:
+    app: consul-server
