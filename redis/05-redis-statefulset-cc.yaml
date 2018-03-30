@@ -1,0 +1,41 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: sts-redis-cc
+  namespace: platform
+spec:
+  serviceName: "svc-redis-cc"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: sts-redis-cc
+        environment: test
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: cntr-redis-cc
+        image: registry.cn-hangzhou.aliyuncs.com/jc-network-web2/redis-in-k8s:4.0.8
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: CLUSTER_CTRL
+          value: "true"
+        - name: CLUSTER_SVC
+          value: "svc-redis-cluster"
+        - name: REDIS_CLUSTER_SLAVE_QUANTUM
+          value: "1"
+        - name: API_SERVER_ADDR
+          value: "172.16.1.229:8080"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: MY_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: PASSWORD
+          value: jc123456
+        ports:
+        - containerPort: 6379
+      imagePullSecrets:
+      - name: registry-secret
+      
