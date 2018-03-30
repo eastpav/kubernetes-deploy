@@ -1,0 +1,16 @@
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: mysql
+  name: mysql
+  namespace: paas
+spec:
+  type: NodePort
+  ports:
+  - name: mysql-port
+    port: 3306
+    nodePort: 30006
+    targetPort: 3306
+  selector:
+    app: mysql
